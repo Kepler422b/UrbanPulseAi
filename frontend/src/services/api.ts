@@ -13,7 +13,26 @@ import {
   InsightAnalysisResponse,
 } from '../types';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+// Resolve API base URL:
+// 1. Vercel Service Binding (process.env.BACKEND_URL) when executing in SSR/Node/serverless runtimes
+// 2. Client-side build/runtime env var (import.meta.env.VITE_API_BASE_URL)
+// 3. Fallback to relative '/api' which matches Vercel multi-service rewrite:
+//    { "source": "/api/(.*)", "destination": { "service": "backend" } }
+const getApiBaseUrl = (): string => {
+  try {
+    if (typeof process !== 'undefined' && process.env && process.env.BACKEND_URL) {
+      return `${process.env.BACKEND_URL.replace(/\/+$/, '')}/api`;
+    }
+  } catch {
+    // Ignore in pure browser contexts where process is not defined
+  }
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL.replace(/\/+$/, '');
+  }
+  return '/api';
+};
+
+const API_BASE = getApiBaseUrl();
 
 function getAuthHeader(): Record<string, string> {
   const token = localStorage.getItem('urbanpulse_token');

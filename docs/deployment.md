@@ -54,3 +54,35 @@ This boots:
 - Backend on port `8000`
 - Frontend on port `5173`
 - (Optional) MongoDB service on port `27017`
+
+---
+
+## 5. Unified Multi-Service Deployment on Vercel
+
+The repository includes a root `vercel.json` configured for **Vercel Services**, allowing both the FastAPI backend and Vite frontend to deploy together as a single unified Vercel project with shared routing and single-domain access:
+
+### Configuration (`vercel.json`)
+- **Backend Service**:
+  - `root`: `backend`
+  - `framework`: `fastapi`
+  - `entrypoint`: `app.main:app`
+- **Frontend Service**:
+  - `root`: `frontend`
+  - `framework`: `vite`
+  - `bindings`: Injects internal backend URL into `BACKEND_URL`
+- **Routing**:
+  - `/api/(.*)` &rarr; `backend` (receives `/api/...`)
+  - `/uploads/(.*)` &rarr; `backend`
+  - `/(.*)` &rarr; `frontend`
+
+### Steps to Deploy:
+1. Import repository into Vercel.
+2. Vercel detects root `vercel.json` and builds both services automatically.
+3. Configure environment variables in the Vercel dashboard:
+   - `MONGODB_URI`: Your MongoDB Atlas connection string.
+   - `JWT_SECRET_KEY`: A strong 64-char secret key.
+4. Run locally with Vercel CLI:
+   ```bash
+   vercel dev
+   ```
+
